@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
+import { Link } from 'react-router-dom';
 
 const GET_BOOKS = gql`
   query GetBooks {
@@ -26,7 +27,9 @@ export default () => {
     <ul>
       {data.books && data.books.map(book => (
         <li key={book._id}>
-          {book.title} by: {book.author.name}
+          <Link to={`/books/${book._id}`}>
+            {book.title} by: {book.author.name}
+          </Link>
         </li>
       ))}
     </ul>

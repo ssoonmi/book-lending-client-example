@@ -182,7 +182,7 @@ export default () => {
 };
 ```
 
-Let's display this `BookList` component in a `BookIndex` page. Create a `pages` folder in your `src`. Then create a file called `BookIndex.js` in there. 
+Let's display this `BookList` component in a `BookIndex` page. Create a `pages` folder in your `src`. Then create a file called `BookIndex.js` in there. Our `pages` folder will hold all the pages at different routes of our app.
 
 Import the `BookList` component in `BookIndex` component and render a header saying `Book Index Page` and the `BookList` component for now.
 
@@ -219,7 +219,7 @@ export default () => {
   return (
     <BrowserRouter>
       <Switch>
-        <Route path="/" component={BookIndex} />
+        <Route exact path="/" component={BookIndex} />
       </Switch>
     </BrowserRouter>
   );
@@ -246,7 +246,130 @@ We only need this in development, so we are allowing Cross-Origin Resource Shari
 
 Now let's try refreshing our React app. You should see the list of all the books! If you don't, make sure to check the server logs and the Chrome DevTools console to see what errors you have.
 
------------------------- IN PROGRESS ----------------------------
+## Book Show Page
+
+On your own now, try creating a `BookShow` page. Keep your queries and mutations in your components in your `components` folder, not your `pages` folder, just like how we did with our `BookIndex` page. I suggest making a component called `BookDetails` in `src/components/books`.
+
+You will need to make the `bookId` the wildcard in your `Route` `path` to know which book you want to show. Then, from that `bookId` you will make a query for getting the `book`'s information.
+
+Remember, you can define the `variables` of a query like so:
+
+```javascript
+const { data, loading, error } = useQuery(
+  GET_WHATEVER, 
+  {
+    variables: {
+      variableName: variableValue
+    }
+  }
+)
+```
+
+Refactor your `BookList` component to add a link on each book to direct the user to the respective `BookShow` page.
+
+**Try making the `BookDetails` component and `BookShow` page on your own before looking below. If you are having issues coming up with how to make the query, test it out first in Playground at [localhost:5000/playground](localhost:5000/playground).**
+
+Once you're done, you should have your `BookDetails` component and `BookShow` page looking like so:
+
+```javascript
+// src/components/books/BookDetails.js
+import React from 'react';
+import { useQuery } from '@apollo/react-hooks';
+import gql from 'graphql-tag';
+
+const GET_BOOK = gql`
+  query GetBook($bookId: ID!) {
+    book(_id: $bookId) {
+      _id
+      title
+      isBooked
+      author {
+        _id
+        name
+      }
+    }
+  }
+`;
+
+
+export default ({ bookId }) => {
+  const { data, loading, error } = useQuery(
+    GET_BOOK,
+    {
+      variables: {
+        bookId
+      }
+    }
+  );
+
+  if (loading) return <p>Loading</p>;
+  if (error) return <p>ERROR</p>;
+  if (!data) return <p>Not found</p>;
+  if (!data.book) return <p>Book Not Found</p>;
+
+  const book = data.book;
+
+  return (
+    <>
+      <h2>{book.title}</h2>
+      <p>By: {book.author.name}</p>
+      {book.isBooked ? (
+        <p>Already Checked Out</p>
+      ) : (
+        <p>Not Checked Out</p>
+      )}
+    </>
+  )
+};
+```
+
+```javascript
+// src/pages/BookShow.js
+import React from 'react';
+import BookDetails from '../components/books/BookDetails';
+
+export default (props) => {
+  const { bookId } = props.match.params;
+
+  return (
+    <>
+      <h1>Book Show Page</h1>
+      <BookDetails bookId={bookId}/>
+    </>
+  )
+}
+```
+
+You should have added the following to your `src/App.js`.
+
+```javascript
+// src/App.js 
+// add this to your imports
+import BookShow from './pages/BookShow';
+// add this to your list of Routes
+<Route path="/books/:bookId" component={BookShow} />
+```
+
+Refactor your `BookList` component for each book to link to the `BookShow` page:
+
+```javascript
+// src/components/books/BookList.js
+// for each book in the list
+<li key={book._id}>
+  <Link to={`/books/${book._id}`}>
+    {book.title} by: {book.author.name}
+  </Link>
+</li>
+```
+
+Make sure to test it out to see if it works!
+
+## Refactoring Your Repo
+
+
+
+
+------------------------ IN PROGRESS (REFRESH TO SEE IF THERE ARE UPDATES) ----------------------------
 
 [Server Set Up instructions here]: https://github.com/ssoonmi/mern-graphql-curriculum/blob/master/formulating_queries_and_mutations.md#set-up
 [A Guide to Service Workers in React.js]: https://levelup.gitconnected.com/a-guide-to-service-workers-in-react-js-82aec1d6a22d
