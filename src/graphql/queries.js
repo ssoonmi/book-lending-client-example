@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { BOOK_DATA } from './fragments';
+import { BOOK_DATA, AUTHOR_DATA } from './fragments';
 
 export const GET_BOOKS = gql`
   query GetBooks {
@@ -18,4 +18,26 @@ export const GET_BOOK = gql`
     }
   }
   ${BOOK_DATA}
-`
+`;
+
+export const GET_AUTHORS = gql`
+  query GetAuthors {
+    authors {
+      ...AuthorData
+    }
+  }
+  ${AUTHOR_DATA}
+`;
+
+export const GET_AUTHOR = gql`
+  query GetAuthor($authorId: ID!) {
+    author(_id: $authorId) {
+      ...AuthorData
+      books {
+        _id
+        title
+      }
+    }
+  }
+  ${AUTHOR_DATA}
+`;

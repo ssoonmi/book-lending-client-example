@@ -15,7 +15,11 @@ export default () => {
       {data.books && data.books.map(book => (
         <li key={book._id}>
           <Link to={`/books/${book._id}`}>
-            {book.title} by: {book.author.name}
+            {book.title}
+          </Link>
+          by:
+          <Link to ={`/authors/${book.author._id}`}>
+            {book.author.name}
           </Link>
         </li>
       ))}

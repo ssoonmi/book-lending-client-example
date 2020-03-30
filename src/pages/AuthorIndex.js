@@ -1,13 +1,13 @@
 import React from 'react';
-import BookList from '../components/books/BookList';
+import AuthorList from '../components/authors/AuthorList';
 import NavBar from '../components/navbar/NavBar';
 
 export default () => {
   return (
     <>
       <NavBar />
-      <h1>Book Index Page</h1>
-      <BookList />
+      <h1>Author Index Page</h1>
+      <AuthorList />
     </>
   );
 };

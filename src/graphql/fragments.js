@@ -10,3 +10,10 @@ export const BOOK_DATA = gql`
     }
   }
 `;
+
+export const AUTHOR_DATA = gql`
+  fragment AuthorData on Author {
+    _id
+    name
+  }
+`;

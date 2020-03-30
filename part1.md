@@ -1,4 +1,4 @@
-# Book Lending Frontend Project
+# Part I
 
 Today, we will be creating the frontend for the online book lending example we saw on Day 1.
 
