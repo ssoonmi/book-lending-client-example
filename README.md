@@ -1,68 +1,89 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Book Lending Frontend Project
 
-## Available Scripts
+Today, we will be creating the frontend for the online book lending example we saw on Day 1.
 
-In the project directory, you can run:
+## Set Up
 
-### `npm start`
+### Starting your Server
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+If you haven't already, follow the [Server Set Up instructions here] for starting your server. We will be making queries and mutations to this server at [localhost:5000/graphql](localhost:5000/graphql). If you want to test out your queries, you can do so at [localhost:5000/playground](localhost:5000/playground). 
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+### Install Dependencies
 
-### `npm test`
+**Right outside** of the server repo, we will be using `create-react-app` to create our frontend folder structure. Let's name the project, `book-lending-client`. Run `create-react-app book-lending-client`. If you don't have `create-react-app` command, then you need to `npm install -g create-react-app` and install it globally. Let's `cd` inside of the newly created folder.
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+`npm install` the following dependencies in the `client` folder: 
 
-### `npm run build`
+- apollo-client
+- apollo-cache-inmemory
+- apollo-link-http
+- apollo-link-error
+- @apollo/react-hooks
+- react-apollo
+- graphql
+- graphql-tag
+- react-router-dom
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Apollo Client Set Up
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+Let's create a folder in our `src` folder called `graphql` and create a file called `client.js` inside of it. Here we will initialize our `ApolloClient`, similar to how we initialized our `Redux` store with a `store.js` file.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+We need to import the following:
 
-### `npm run eject`
+- `ApolloClient` from `apollo-client` - to initialize our client
+- `InMemoryCache` from `apollo-cache-inmemory` - provides us with our cache
+- `ApolloLink` from `apollo-link` - links middlewares for our client
+- `HTTPLink` from `apollo-link-http` - middleware for defining where our GraphQL requests should run against and our headers
+- `onError` from `apollo-link-error` - middleware for defining how to log our errors
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```javascript
+// src/graphql/client.js
+import { ApolloClient } from "apollo-client";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { ApolloLink } from 'apollo-link';
+import { HttpLink } from "apollo-link-http";
+import { onError } from "apollo-link-error";
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+In this file, we are going to define a `createClient` `async` function and export it, like so:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```javascript
+// src/graphql/client.js after imports
+const createClient = async () => {
+  // ...
+};
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+export default createClient;
+```
 
-## Learn More
+Inside of the `createClient` function, we will be creating the `cache` first from `InMemoryCache`:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```javascript
+const cache = new InMemoryCache({ dataIdFromObject: object => object._id });
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+We are passing in an options object into the `new InMemoryCache` with a key of `dataIdFromObject` pointing to a function which will return the `_id` of the `object` that's passed in. This allows the `cache` to identify how it should be storing data by, which in our case is the `_id`. 
 
-### Code Splitting
+Next, we will be defining our middlewares, or `links` Our `links` need to be concatenated in the form of an array. Let's define that array and configure our `errorLink`.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+```javascript
+const links = [];
 
-### Analyzing the Bundle Size
+const errorLink = onError(({ networkError, graphQLErrors }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message, locations, path, extensions }) => {
+      console.group("\x1b[31m%s\x1b[0m", "[GraphQL error] ", "Message: ", message);
+      console.log("Location: ", locations);
+      console.log("Path: ", path);
+      console.log("Extensions: ", extensions)
+      console.groupEnd();
+    });
+  }
+  if (networkError) console.log("\x1b[31m%s\x1b[0m", "[Network error]:", networkError);
+});
+links.push(errorLink);
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
 
-### Making a Progressive Web App
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+[Server Set Up instructions here]: https://github.com/ssoonmi/mern-graphql-curriculum/blob/master/formulating_queries_and_mutations.md#set-up
