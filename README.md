@@ -6,7 +6,7 @@ Today, we will be creating the frontend for the online book lending example we s
 
 ### Starting your Server
 
-If you haven't already, follow the [Server Set Up instructions here] for starting your server. We will be making queries and mutations to this server at [localhost:5000/graphql](localhost:5000/graphql). If you want to test out your queries, you can do so at [localhost:5000/playground](localhost:5000/playground). 
+If you haven't already from Day 1, follow the [Server Set Up instructions here] for starting your server from the Book Lending Server Example. We will be making queries and mutations to this server at [localhost:5000/graphql](localhost:5000/graphql). If you want to test out your queries, you can do so at [localhost:5000/playground](localhost:5000/playground). 
 
 ### Install Dependencies
 
@@ -50,7 +50,7 @@ In this file, we are going to define a `createClient` function and export it, li
 
 ```javascript
 // src/graphql/client.js after imports
-const createClient = async () => {
+const createClient = () => {
   // ...
 };
 
@@ -364,8 +364,107 @@ Refactor your `BookList` component for each book to link to the `BookShow` page:
 
 Make sure to test it out to see if it works!
 
-## Refactoring Your Repo
+## Refactoring Your Queries
 
+For now, we define the queries in the same file as the component we are using it in. What if multiple components want to use the same query? Then it would be redundant to define the same queries in multiple components. Let's make our code `DRY`er.
+
+Create a file called `queries.js` in `src/graphql`. Move the `GET_BOOKS` and `GET_BOOK` queries into this file and export them. Make sure to import them in the files that use them.
+
+```javascript
+// src/graphql/queries.js
+import gql from 'graphql-tag';
+
+export const GET_BOOKS = gql`
+ ...
+`;
+
+export const GET_BOOK = gql`
+ ...
+`;
+```
+
+### GraphQL Fragments
+
+You may have noticed, information retrieved for a `book` looks the same as `books`. We can make this `DRY`er by defining what's called a GraphQL `fragment`. 
+
+A GraphQL `fragment` has to be defined on a `type`. The inner fields are fields that can be extracted from that `type`.
+
+```javascript
+import gql from 'graphql-tag';
+
+const FRAGMENT_NAME = gql`
+  fragment FragmentName on TypeName {
+    validFieldsOnTypeName
+  }
+`;
+```
+
+To use the `fragment` with `graphql-tag` in a `query`, you need to interpolate the `fragment` into the `query`, like so:
+
+```javascript
+import gql from 'graphql-tag';
+
+const QUERY_NAME = gql`
+  query QueryName {
+    queryName {
+      ...FragmentName
+      otherValidFieldsOnTypeName
+    }
+  }
+  ${FRAGMENT_NAME}
+`;
+```
+
+You can define other field names on top of the ones defined on the `fragment` in the query if needed.
+
+Let's try making a `fragment`! Create a `fragments.js` file in our `graphql` folder. 
+
+Inside of it, create a GraphQL `fragment` called `BOOK_DATA` which will define information we want to usually extract from a `Book` type.
+
+**Try making this yourself before looking below.**
+
+```javascript
+import gql from 'graphql-tag'
+
+export const BOOK_DATA = gql`
+  fragment BookData on Book {
+    _id
+    title
+    author {
+      _id
+      name
+    }
+  }
+`;
+```
+
+Import this fragment into the `queries.js` file and use it in both of the queries there.
+
+**Try refactoring the queries yourself before looking below.**
+
+```javascript
+// src/graphql/queries.js
+export const GET_BOOKS = gql`
+  query GetBooks {
+    books {
+      ...BookData
+    }
+  }
+  ${BOOK_DATA}
+`;
+
+export const GET_BOOK = gql`
+  query GetBook($bookId: ID!) {
+    book(_id: $bookId) {
+      ...BookData
+      isBooked
+    }
+  }
+  ${BOOK_DATA}
+`
+```
+
+Test your `BookIndex` and `BookShow` pages to see if your queries still run properly.
 
 
 

@@ -1,21 +1,6 @@
 import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
-
-const GET_BOOK = gql`
-  query GetBook($bookId: ID!) {
-    book(_id: $bookId) {
-      _id
-      title
-      isBooked
-      author {
-        _id
-        name
-      }
-    }
-  }
-`;
-
+import { GET_BOOK } from '../../graphql/queries';
 
 export default ({ bookId }) => {
   const { data, loading, error } = useQuery(
