@@ -242,7 +242,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 ```
 
-We only need this in development, so we are allowing Cross-Origin Resource Sharing only with the origin of `http://localhost:3000`. Restart your server.
+We only need this in development, so we are allowing Cross-Origin Resource Sharing only with the origin of `http://localhost:3000`. **Restart your server.**
 
 Now let's try refreshing our React app. You should see the list of all the books! If you don't, make sure to check the server logs and the Chrome DevTools console to see what errors you have.
 
