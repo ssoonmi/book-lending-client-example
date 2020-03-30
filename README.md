@@ -2,15 +2,15 @@
 
 Today, we will be creating the frontend for the online book lending example we saw on Day 1.
 
-## Set Up
-
-### Starting your Server
+## Set Up the Server
 
 If you haven't already from Day 1, follow the [Server Set Up instructions here] for starting your server from the Book Lending Server Example. We will be making queries and mutations to this server at [localhost:5000/graphql](localhost:5000/graphql). If you want to test out your queries, you can do so at [localhost:5000/playground](localhost:5000/playground). 
 
-### Install Dependencies
+## Client Set Up
 
 **Right outside** of the server repo, we will be using `create-react-app` to create our frontend folder structure. Let's name the project, `book-lending-client`. Run `create-react-app book-lending-client`. If you don't have `create-react-app` command, then you need to `npm install -g create-react-app` and install it globally. Let's `cd` inside of the newly created folder.
+
+### Install Dependencies
 
 `npm install` the following dependencies in the `client` folder: 
 
@@ -25,7 +25,7 @@ If you haven't already from Day 1, follow the [Server Set Up instructions here] 
 - graphql-tag
 - react-router-dom
 
-## Apollo Client Set Up
+### Apollo Client Set Up
 
 Let's create a folder in our `src` folder called `graphql` and create a file called `client.js` inside of it. Here we will initialize our `ApolloClient`, similar to how we initialized our `Redux` store with a `store.js` file.
 
@@ -466,6 +466,13 @@ export const GET_BOOK = gql`
 
 Test your `BookIndex` and `BookShow` pages to see if your queries still run properly.
 
+## Mutations
+
+Let's do some mutations now! 
+
+### `createBook` Mutation
+
+Let's make a mutation in our server called `createBook`. Make sure you use the Mongoose `Book` model as a reference and make define the mutation in the type definitions and resolvers.
 
 
 ------------------------ IN PROGRESS (REFRESH TO SEE IF THERE ARE UPDATES) ----------------------------
