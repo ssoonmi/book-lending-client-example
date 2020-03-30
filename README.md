@@ -472,8 +472,9 @@ Let's do some mutations now!
 
 ### `createBook` Mutation
 
-Let's make a mutation in our server called `createBook`. Make sure you use the Mongoose `Book` model as a reference and make define the mutation in the type definitions and resolvers.
+Let's do some review and make a mutation in our server called `createBook`. Make sure you use the Mongoose `Book` model as a reference and make define the mutation in the type definitions and resolvers.
 
+### 
 
 ------------------------ IN PROGRESS (REFRESH TO SEE IF THERE ARE UPDATES) ----------------------------
 
