@@ -228,7 +228,7 @@ export default () => {
 
 Now let's start your React app! Run `npm start` and open [localhost:3000](localhost:3000).
 
-You should see `Book Index Page` with `ERROR` right underneath it. Open up your Chrome DevTools and check out the console. You should see a `Network Error` with the reason being `cors`, Cross-Origin Resource Sharing, error. We need to configure our server to be able to accept requests from `http://localhost:3000`, not just its own uri, `http://localhost:5000`.
+**You should see `Book Index Page` with `ERROR` right underneath it.** Open up your Chrome DevTools and check out the console. You should see a `Network Error` with the reason being `cors`, Cross-Origin Resource Sharing, error. We need to configure our server to be able to accept requests from `http://localhost:3000`, not just its own uri, `http://localhost:5000`.
 
 Head over to the `book-lending-server-example` project. Run `npm install -D cors` (we only need to do this configuration in development mode). Go to the server entry file, `index.js`. 
 
