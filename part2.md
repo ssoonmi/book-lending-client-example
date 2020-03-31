@@ -58,20 +58,50 @@ This is querying our server for the current user with the `headers` defined in o
 
 Refresh the page and take a look at what was logged in the console. You should see an object with `data` and `data.me` including the information about the demo user.
 
-If we clear the token, `localStorage.removeItem('token')` and refresh the page, then you should see an object logged with `data` and `data.me` with the value of `null`.
+If we clear the token, `localStorage.removeItem('token')` and refresh the page, then you should see an object logged with `data` and `data.me` with the value of `null`. **Remove or comment out the query after finishing tests.**
 
 Awesome! Our server will now know if there is a current user from the `token` that we defined on our `authorization` header. But how does our client know if there is a user that is logged in? In `Redux`, we had a slice of state called `session` that stored the `id` of our current user and identified if there was an authenticated user. Similar to that, we will use the `cache` in Apollo Client to identify if there is a logged in user.
 
 When our app loads for the first time, we need to tell the `cache` if there is a user logged in or not. This will be determined by the presence of our `token` in the `localStorage`.
 
-After the client definition, let's write to the `cache` using `client.writeData`. We are going to set a key of `isLoggedIn` in our `cache`'s `data` to a Boolean value. 
+One way of doing this, is to define **local `typeDefs` and `resolvers`** which exist **only on the client**, not on the server. We can create a client-only `Query` which will tell us if there is a user logged in or not based on the `token` in the `localStorage`.
+
+To make these local `typeDefs` and `resolvers`, create a file called `resolvers.js` in `src/graphql` folder. 
+
+We want to `extend` the `Query` `type` to include a `isLoggedIn` field that will always resolve to a `Boolean` value. We are then going to create a `resolver` function on the `Query` type called  `isLoggedIn` that will return `true` if there is a `token`, and `false` if there isn't.
 
 ```javascript
-// src/graphql/client.js after client definition
-cache.writeData({
-  data: {
-    isLoggedIn: !!localStorage.getItem("token")
+// src/graphql/resolvers.js
+import gql from 'graphql-tag';
+
+export const typeDefs = gql`
+  extend type Query {
+    isLoggedIn: Boolean!
   }
+`;
+
+export const resolvers = {
+  // for data that only exists in the frontend
+  Query: {
+    isLoggedIn: () => {
+      // console.log('isLoggedIn resolver called') // comment this in to see when this resolver function is called
+      return !!localStorage.getItem("token")
+    }
+  }
+};
+```
+
+Export the `typeDefs` and `resolvers`
+
+Now we have to connect the `typeDefs` and `resolvers` to the `client`. Import them into the `src/graphql/client.js` file. Attach them to the `client` as keys to the options object when defining the `client`: 
+
+```javascript
+// src/graphql/client.js client definition
+const client = new ApolloClient({
+  cache,
+  link: ApolloLink.from(links),
+  typeDefs,
+  resolvers
 });
 ```
 
@@ -79,10 +109,10 @@ This isn't enough for the client to know whether or not we have a real authentic
 
 Resetting the `cache` has pros and cons. When resetting the `cache`, any user specific data will be erased upon log out. But, you will lose all your `cache`d data. Let's reset the `cache` for now, and you can choose if it's resetting the store is the best decision for your app for yourself later.
 
-After `cache.writeData`, we will be using the `me` query to return information about our current user.
+After the client definition, we will be using the `me` query to return information about our current user.
 
 ```javascript
-// src/graphql/client.js after cache.writeData
+// src/graphql/client.js after defining client
 const CURRENT_USER = gql`
   query CurrentUser {
     me {
@@ -97,6 +127,7 @@ if (localStorage.getItem('token')) {
   client
     .query({ query: CURRENT_USER })
     .then(({ data }) => {
+      // console.log(data); // comment this in to see what data returns
       // if there is no data or data.me is null, then reset the cache
       if (!data || !data.me) client.resetStore();
     });
@@ -107,13 +138,10 @@ If there is no `data` or `data.me` is null, then reset the `cache`.
 
 We should also remove the invalid `token` from our `localStorage` when the client is reset. We can define what our cache should do when our `cache` is reset using, `client.onResetStore`. This takes in a callback function that will be called whenever our `cache` resets.
 
-Let's add the following right before we query for the current user which will clear the `localStorage` and write `isLoggedIn` to false in our `cache` `data`:
-
 ```javascript
 // src/graphql/client.js
 // call resetStore whenever logging out
 client.onResetStore(() => {
-  client.writeData({ data: { isLoggedIn: false } });
   localStorage.clear();
 });
 
@@ -138,7 +166,45 @@ createClient().then(client => {
 });
 ```
 
-Now we should be done with setting up our `client` for authentication for now! But how do we test this? First we need to show if there is a current user or not and be able to log out.
+Now we should be done with setting up our `client` for authentication for now! But how do we test this? Let's put the `client` and `gql` from `graphql-tag` on the window, but only do this when we are in development mode.
+
+```javascript
+if (process.env.NODE_ENV === 'development') {
+  window.client = client;
+  window.gql = gql;
+}
+```
+
+Next, let's comment in the `console.log`'s in the `isLoggedIn` resolver function and in the `.then` to the `CURRENT_USER` `query` in `client.js`.
+
+Set the `token` on the `localStorage` to the `token` from earlier and refresh the page. You should see the current user's information printed in the console.
+
+Let's query our `client` for `isLoggedIn`. When we call this query, we have to make sure we add an `@client` keyword after `isLoggedIn`. This will tell the `client` to only ask for the information in our `cache` rather than our server. The query should look like this:
+
+```graphql
+query IsLoggedIn {
+  isLoggedIn @client
+}
+```
+
+Use the `client` on the window to `query` for `isLoggedIn`:
+
+```javascript
+// run in our Chrome DevTools console
+client.query({
+  query: gql`
+    query isLoggedIn {
+      isLoggedIn @client
+    }
+  `
+}).then((data) => console.log(data));
+```
+
+We should see `"isLoggedIn resolver called"` logged in our console as well as what the `query` returned, which should have `isLoggedIn: true`. If you run the same query, you don't get `"isLoggedIn resolver called"` logged again. Can you guess why?
+
+The `isLoggedIn` is not stored in the `cache` the first time that the `query` is made, and the `client` will ask for the information from the local `resolvers`. But after the `query` is first called, `isLoggedIn` is stored in the `cache` and can be fetched from there instead of going to the local `resolvers`.
+
+Let's simulate logging out by calling `client.resetStore()` and then running the query again. This will clear our `cache` so the `isLoggedIn` resolver has to be called again to fetch the information asked from the query.
 
 ## Current User Profile
 
@@ -225,4 +291,39 @@ export default () => {
     </>
   );
 }
+```
+
+Now, try refreshing the page when there is no `token` in your `localStorage` (`localStorage.removeItem('token')`). What happens? You should get an error message saying `Cannot read the property 'username' of null`. Try `console.log`ing what `data.me` is. 
+
+`data.me` should be returning `null`. We should not be able to access the `UserProfile` page if there is not valid user logged in. In `Redux` we defined `AuthRoute`'s and `ProtectedRoute`s. Let's create the Apollo Client equivalent.
+
+First, we need to define a query called `IS_LOGGED_IN` that will look into our cache for the `isLoggedIn` boolean for identifying if a user if logged in or not. This is a query that 
+
+Create a folder called `util` in our `src/components` folder with a file called `ProtectedRoute.js`. Remember the `isLoggedIn` boolean that we wrote to our `cache` earlier? We will be using that boolean to either show the component that's passed in, or redirect our user.
+
+```javascript
+// src/components/util/ProtectedRoute.js
+import React from 'react';
+import { Route, Redirect } from 'react-router-dom';
+import { useQuery } from '@apollo/react-hooks';
+import { IS_LOGGED_IN } from '../../graphql/queries';
+
+export default ({
+  component: Component,
+  path,
+  exact,
+  redirectTo
+}) => {
+  const { data, loading, error } = useQuery(IS_LOGGED_IN);
+
+  if (!redirectTo) redirectTo = "/login";
+
+  if (loading || error || !data) {
+    return null;
+  } else if (data.isLoggedIn) {
+    return <Route path={path} component={Component} exact={exact} />;
+  } else {
+    return <Redirect to={redirectTo} />;
+  }
+};
 ```
