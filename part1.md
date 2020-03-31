@@ -480,6 +480,10 @@ You can refactor the `BookIndex` component to include links to the `BookShow` an
 
 You can refactor the `AuthorShow` component to include a list of all the author's `book`s and links to them.
 
+## ErrorPage
+
+Add an `ErrorPage` or 404 page to your list of routes.
+
 If you have time, you can use it to apply CSS styling to your site so far!
 
 [Server Set Up instructions here]: https://github.com/ssoonmi/mern-graphql-curriculum/blob/master/formulating_queries_and_mutations.md#set-up
