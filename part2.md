@@ -30,7 +30,9 @@ const httpLink = new HttpLink({
 });
 ```
 
-Let's test this out. First we need to set our `token` to our `localStorage`. In GraphQL Playground, `login` with the demo user who has a `username` of `"demo"` and `password` of `"password"`. You should return the `token` from this query. In the Chrome DevTools console, write `localStorage.setItem('token', token)` where `token` is the `token` you got back from Playground.
+Let's test this out. First we need to set our `token` to our `localStorage`. In GraphQL Playground, `login` with the demo user who has a `username` of `"demo"` and `password` of `"password"`. You should return the `token` from this query. 
+
+Once we have our `token`, head back to the React app. In the Chrome DevTools console, write `localStorage.setItem('token', token)` where `token` is the `token` you got back from Playground.
 
 Next, we need to use our `client` to query our server to see if the `authorization` header was set properly. If you head over to Playground again, you'll see a `me` query in the schema. Let's use this query to return information about the current user using the `token`. 
 
@@ -295,11 +297,22 @@ export default () => {
 
 Now, try refreshing the page when there is no `token` in your `localStorage` (`localStorage.removeItem('token')`). What happens? You should get an error message saying `Cannot read the property 'username' of null`. Try `console.log`ing what `data.me` is. 
 
-`data.me` should be returning `null`. We should not be able to access the `UserProfile` page if there is not valid user logged in. In `Redux` we defined `AuthRoute`'s and `ProtectedRoute`s. Let's create the Apollo Client equivalent.
+`data.me` should be returning `null`. We should prevent users from accessing the `UserProfile` page if there is not valid user logged in. In `Redux` we defined `AuthRoute`'s and `ProtectedRoute`s to prevent users from accessing different routes based on their logged in status. Let's create the Apollo Client equivalent.
 
-First, we need to define a query called `IS_LOGGED_IN` that will look into our cache for the `isLoggedIn` boolean for identifying if a user if logged in or not. This is a query that 
+First, we need to define a query called `IS_LOGGED_IN` that will look into our `cache` for the `isLoggedIn` boolean for identifying if a user if logged in or not. Create the `IS_LOGGED_IN` query in `src/graphql/queries.js`:
 
-Create a folder called `util` in our `src/components` folder with a file called `ProtectedRoute.js`. Remember the `isLoggedIn` boolean that we wrote to our `cache` earlier? We will be using that boolean to either show the component that's passed in, or redirect our user.
+```javascript
+// src/graphql/queries.js
+export const IS_LOGGED_IN = gql`
+  query IsLoggedIn {
+    isLoggedIn @client
+  }
+`;
+```
+
+Create a folder called `util` in our `src/components` folder with a file called `ProtectedRoute.js`. In this component, we will be querying for `isLoggedIn` and using that boolean to either show the component that's passed in, or redirect our user.
+
+**Try to create your own `ProtectedRoute.js` component. If you get stuck, don't look at the solution just yet. Ask a question.**
 
 ```javascript
 // src/components/util/ProtectedRoute.js
@@ -327,3 +340,17 @@ export default ({
   }
 };
 ```
+
+After you create the `ProtectedRoute` component, let's use this component to render our `UserProfile` page instead of using `Route` in `src/App.js`. Make sure to import the `ProtectedRoute` component.
+
+```javascript
+// src/App.js in routes
+<ProtectedRoute path="/me" component={UserProfile} />
+```
+
+Awesome! Now if you refresh the page at `/me` when you are logged out, you should be redirected. 
+
+Try creating the `AuthRoute` component that will redirect a user if they are logged in.
+
+
+------------------- IN PROGRESS (LET ME KNOW IF YOU REACH THIS POINT) --------------------------
