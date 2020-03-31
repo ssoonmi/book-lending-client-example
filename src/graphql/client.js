@@ -3,8 +3,11 @@ import { InMemoryCache } from "apollo-cache-inmemory";
 import { ApolloLink } from 'apollo-link';
 import { HttpLink } from "apollo-link-http";
 import { onError } from "apollo-link-error";
+import { CURRENT_USER } from './queries';
+import gql from 'graphql-tag';
+import { typeDefs, resolvers } from './resolvers';
 
-const createClient = () => {
+const createClient = async () => {
   const cache = new InMemoryCache({ dataIdFromObject: object => object._id });
 
   const links = [];
@@ -26,7 +29,7 @@ const createClient = () => {
   const httpLink = new HttpLink({
     uri: 'http://localhost:5000/graphql',
     headers: {
-      // ...
+      authorization: localStorage.getItem('token')
     }
   });
 
@@ -35,7 +38,42 @@ const createClient = () => {
   const client = new ApolloClient({
     cache,
     link: ApolloLink.from(links),
+    typeDefs,
+    resolvers
   });
+
+  // client
+  //   .query({
+  //     query: gql`
+  //     query CurrentUser {
+  //       me {
+  //         _id
+  //         username
+  //       }
+  //     }
+  //   `
+  //   })
+  //   .then(result => console.log(result));
+
+  if (process.env.NODE_ENV === 'development') {
+    window.client = client;
+    window.gql = gql;
+    window.CURRENT_USER = CURRENT_USER;
+  }
+
+  client.onResetStore(() => {
+    localStorage.clear();
+  });
+
+  if (localStorage.getItem('token')) {
+    await client
+      .query({ query: CURRENT_USER })
+      .then(({ data }) => {
+        console.log(data);
+        // if there is no data or data.me is null, then reset the cache
+        if (!data || !data.me) client.resetStore();
+      });
+  }
 
   return client;
 };

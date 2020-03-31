@@ -34,9 +34,9 @@ Let's test this out. First we need to set our `token` to our `localStorage`. In 
 
 Once we have our `token`, head back to the React app. In the Chrome DevTools console, write `localStorage.setItem('token', token)` where `token` is the `token` you got back from Playground.
 
-Next, we need to use our `client` to query our server to see if the `authorization` header was set properly. If you head over to Playground again, you'll see a `me` query in the schema. Let's use this query to return information about the current user using the `token`. 
+Next, we need to use our `client` to query our server to see if the `authorization` header was set properly. If you head over to Playground again, you'll see information about the `me` query in the `"SCHEMA"` tab. Let's use this query to return information about the current user using the `token` in our React app now. 
 
-Right after the definition of our `client`, let's do:
+Right after the definition of our `client`, let's query for the current user using the `me` query:
 
 ```javascript
 // src/graphql/client.js after defining the client
@@ -271,7 +271,12 @@ import { Link } from 'react-router-dom';
 import { CURRENT_USER } from '../../graphql/queries';
 
 export default () => {
-  const { data, loading, error } = useQuery(CURRENT_USER);
+  const { data, loading, error } = useQuery(
+    CURRENT_USER,
+    {
+      networkPolicy: 'network-only'
+    }
+  );
 
   if (loading) return <p>Loading</p>;
   if (error) return <p>ERROR</p>;
@@ -294,6 +299,8 @@ export default () => {
   );
 }
 ```
+
+Notice above that we are defining a `networkPolicy` of `'network-only'` when we use this query. That's because we want the most updated information about our user whenever we access this page. We don't want to rely on what is stored in our `cache`.
 
 Now, try refreshing the page when there is no `token` in your `localStorage` (`localStorage.removeItem('token')`). What happens? You should get an error message saying `Cannot read the property 'username' of null`. Try `console.log`ing what `data.me` is. 
 
@@ -350,9 +357,156 @@ After you create the `ProtectedRoute` component, let's use this component to ren
 
 Awesome! Now if you refresh the page at `/me` when you are logged out, you should be redirected. 
 
-Try creating the `AuthRoute` component that will redirect a user if they are logged in.
+**Try creating the `AuthRoute` component that will redirect a user if they are logged in.**
 
+## `LogOutButton`
+
+Let's make the `LogOutButton` on the `UserProfile` page.
+
+Remember, to log out of our app, we need to call `client.resetStore()`. But how do we get access to `client` in a component without doing a `query` or a `mutation`? There is a hook called `useApolloClient` that will return the `client` when invoked.
+
+Create a file called `LogOutButton` in `src/components/users` folder.
+
+**Try creating the `LogOutButton` component on your own. If you get stuck, please ask a question before looking below.**
+
+```javascript
+import React from 'react';
+import { useApolloClient } from '@apollo/react-hooks';
+
+export default () => {
+  const client = useApolloClient();
+  return (
+    <button onClick={() => {
+      client.resetStore();
+    }}>
+      Log Out
+    </button>
+  )
+};
+```
+
+Import this component into `UserProfile` and render it.
+
+Let's test this component out! First, you need to make sure you are logged in with the right `token` on `localStorage`. When you hit the `Log Out` button on the `UserProfile` page, it should redirect you because you are no longer considered logged in by the `ProtectedRoute`.
+
+## `LogInForm`
+
+We're almost done with the authentication process. Now we need a way to log in a user. Let's make our first Apollo Client `mutation` using `login`.
+
+Create a file called `mutations.js` in your `src/graphql` folder. Here you will define your mutations. Let's make on for `LOGIN_USER`. The mutation should look something like this:
+
+```graphql
+mutation LogIn($username: String!, $password: String!) {
+  login(username: $username, password: $password) {
+    _id
+    username
+    token
+    loggedIn
+  }
+}
+```
+
+Next, create a `Login` page with a `LogInForm` component. 
+
+In your `LogInForm` component, we will be creating a form with `useState` and `useMutation` hooks. Import the `LOGIN_USER` mutation and the `IS_LOGGED_IN` and `CURRENT_USER` queries at the top. 
+
+Create just the form with just the `useState` for now, no `useMutation` hook yet.
+
+Now, to submit our form, we need to use the hook, `useMutation`. Familiarize yourself with what `useMutation` returns by checking out this reading again, [Apollo Client reading].
+
+**Try coming up with the syntax for `useMutation`. You should be refetching the `IS_LOGGED_IN` query after running the mutation.** After finishing, please compare with the syntax below.
+
+Your completed form should look something like this:
+
+```javascript
+import React, { useState } from 'react';
+import { useMutation } from '@apollo/react-hooks';
+import { LOGIN_USER } from '../../graphql/mutations';
+import { IS_LOGGED_IN, CURRENT_USER } from '../../graphql/queries';
+
+export default () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [login, { loading, error }] = useMutation(
+    LOGIN_USER,
+    {
+      variables: {
+        username,
+        password
+      },
+      update(cache, { data: { login } }) {
+        // we can either write to the cache directly or refetch the IS_LOGGED_IN query so other components will update properly
+        // cache.writeData({ data: { isLoggedIn: login.loggedIn, me: { _id: login._id, username: login.username } }});
+        localStorage.setItem('token', login.token);
+      },
+      onError() { },
+      refetchQueries: [{ query: IS_LOGGED_IN }, { query: CURRENT_USER }]
+    }
+  );
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      login();
+    }}>
+      <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <input type="submit" value="Log In" disabled={loading}/>
+    </form>
+  )
+};
+```
+
+There are two keys on the `useMutation` options object that you probably haven't seen before, `update` and `onError`. 
+
+The `update` function takes in the `cache` as the first argument, and the result of the mutation as the second argument. The `update` function will run when the mutation is returned from the server. When it comes back, we want to set the `token` in our `localStorage` to the `token` we got back.
+
+The `onError` function is called whenever there is an error returned. This ensures that our entire React app doesn't error out and break if there is an `error` returned from the mutation. The other way we can prevent this from happening is by adding a `.catch` on the `login()` function when submitting the form.
+
+After finishing up the `LogInForm`, make sure you are rendering the form inside your `Login` page and connecting the `Login` page to your `src/App.js` using the `AuthRoute` made from before.
+
+Test out your `Login` page to see if it's working properly and redirecting the user after you press `Log In`!
+
+This is great if logging in is successful, but what about when it's unsuccessful? Try making an unsuccessful log in and see what is logged to your Chrome DevTools console. It looks like there is an error when trying to set the token in the `update` function. Try logging what the `login` variable is in the `update` function when attempting an unsuccessful `login`.
+
+Let's display an `errorMessage` when the `login` variable is null. `useState` to get the `errorMessage` and `setErrorMessage`. When the `update` function and `login` variable is `null`, `setErrorMessage('Invalid Credentials')`, and when it is not null, set the `token` in your `localStorage`. Render the `errorMessage` somewhere in your form.
+
+```javascript
+// src/components/users/LogInForm.js update function
+update(cache, { data: { login } }) {
+  if (!login) setErrorMessage('Invalid Credentials');
+  else {
+    // we can either write to the cache directly or refetch the IS_LOGGED_IN query so other components will update properly
+    // cache.writeData({ data: { isLoggedIn: login.loggedIn }});
+    localStorage.setItem('token', login.token);
+  }
+}
+```
+
+Test this out by trying to Log In with invalid credentials.
+
+In our `onError` function, we can also `setErrorMessage` to `"Something went wrong"` when there is a `NetworkError` or `GraphQLErrors`.
+
+```javascript
+// src/components/users/LogInForm.js onError function
+onError() {
+  setErrorMessage('Something went wrong');
+}
+```
+
+Test out your entire authentication process to make sure there are no errors.
+
+We just finished an entire authentication cycle on our frontend! Awesome work!
+
+## `SignUpForm`
+
+Try making a `SignUp` page and `SignUpForm` on your own. 
+
+There is no mutation for signing up on our server, so head over to the server files and make a mutation for `signup` there as well.
+
+Test out your `SignUp` page and make sure everything works properly still!
 
 ------------------- IN PROGRESS (LET ME KNOW IF YOU REACH THIS POINT) --------------------------
 
 [part1_solutions.zip]: /part1_solutions.zip
+[Apollo Client reading]: https://github.com/ssoonmi/mern-graphql-curriculum/blob/master/apollo_client.md

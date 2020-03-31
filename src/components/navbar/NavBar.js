@@ -15,6 +15,11 @@ export default () => {
             Authors
           </NavLink>
         </li>
+        <li>
+          <NavLink exact to="/me">
+            Profile
+          </NavLink>
+        </li>
       </ul>
     </nav>
   )
