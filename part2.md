@@ -336,7 +336,7 @@ export default ({
   } else if (data.isLoggedIn) {
     return <Route path={path} component={Component} exact={exact} />;
   } else {
-    return <Redirect to={redirectTo} />;
+    return <Route path={path} render={() => <Redirect to={redirectTo} />} />;
   }
 };
 ```
