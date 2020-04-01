@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import BorrowBookButton from './BorrowBookButton';
 import ReturnBookButton from './ReturnBookButton';
 import ProtectedComponent from '../util/ProtectedComponent';
+import DeleteBookButton from './DeleteBookButton';
 
 export default ({ bookId }) => {
   const { data, loading, error } = useQuery(
@@ -38,6 +39,7 @@ export default ({ bookId }) => {
           <ProtectedComponent component={BorrowBookButton} book={book} />
         </>
       )}
+      <ProtectedComponent component={DeleteBookButton} book={book} />
     </>
   )
 };

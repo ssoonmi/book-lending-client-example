@@ -2,6 +2,8 @@ import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { GET_AUTHOR } from '../../graphql/queries';
 import { Link } from 'react-router-dom';
+import ProtectedComponent from '../util/ProtectedComponent';
+import CreateBookForm from '../books/CreateBookForm';
 
 export default ({ authorId }) => {
   const { data, loading, error } = useQuery(
@@ -33,6 +35,7 @@ export default ({ authorId }) => {
           </li>
         ))}
       </ul>
+      <ProtectedComponent component={CreateBookForm} authorId={author._id} />
     </>
   )
 };

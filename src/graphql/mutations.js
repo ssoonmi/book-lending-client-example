@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { USER_CREDENTIALS_DATA } from './fragments';
+import { USER_CREDENTIALS_DATA, BOOK_DATA } from './fragments';
 
 export const LOGIN_USER = gql`
   mutation LogIn($username: String!, $password: String!) {
@@ -43,6 +43,25 @@ export const RETURN_BOOK = gql`
         title
         isBooked
       }
+    }
+  }
+`;
+
+export const CREATE_BOOK = gql`
+  mutation CreateBook($title: String!, $authorId: ID!) {
+    createBook(title: $title, authorId: $authorId) {
+      ...BookData
+    }
+  }
+  ${BOOK_DATA}
+`;
+
+export const DELETE_BOOK = gql`
+  mutation DeleteBook($bookId: ID!) {
+    deleteBook(bookId: $bookId) {
+      success
+      message
+      _id
     }
   }
 `;
