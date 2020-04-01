@@ -13,24 +13,32 @@ export default ({ authorId }) => {
         authorId
       },
       update(cache, { data: { createBook } }) {
-        const booksData = cache.readQuery({ query: GET_BOOKS });
-        if (booksData) {
-          const books = booksData.books.concat([createBook]);
-          cache.writeQuery({ query: GET_BOOKS, data: { books } });
-        }
-        const authorData = cache.readQuery({ query: GET_AUTHOR, variables: { authorId } });
-        if (authorData) {
-          const author = Object.assign({}, authorData.author);
-          author.books = author.books.concat([createBook]);
-          cache.writeQuery({ query: GET_AUTHOR, variables: { authorId }, data: { author }})
-        }
+        try {
+          const booksData = cache.readQuery({ query: GET_BOOKS });
+          if (booksData) {
+            const books = booksData.books.concat([createBook]);
+            cache.writeQuery({ query: GET_BOOKS, data: { books } });
+          }
+        } catch(e) {}
+        try {
+          const authorData = cache.readQuery({ query: GET_AUTHOR, variables: { authorId } });
+          if (authorData) {
+            const author = Object.assign({}, authorData.author);
+            author.books = author.books.concat([createBook]);
+            cache.writeQuery({ query: GET_AUTHOR, variables: { authorId }, data: { author }})
+          }
+        } catch(e) {}
+        setTitle('');
       },
       onError() {}
     }
   );
 
   return (
-    <form onSubmit={createBook}>
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      createBook()
+    }}>
       <h3>Create a Book for this Author</h3>
       <input type="text" value={title} onChange={e => setTitle(e.target.value)}/>
       <input type="submit" value="Create Book" />

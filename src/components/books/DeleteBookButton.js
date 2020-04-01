@@ -12,6 +12,7 @@ export default ({ book }) => {
       variables: { bookId: book._id },
       onError() {},
       update(cache, { data: { deleteBook } }) {
+        if (!deleteBook || !deleteBook.success) return;
         try {
           const booksData = cache.readQuery({ query: GET_BOOKS });
           if (booksData) {

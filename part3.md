@@ -193,4 +193,6 @@ Create a `DeleteBookButton` that will call this mutation.
 
 You also need to make sure the `BookIndex` page and the `AuthorShow` page don't display the book anymore.
 
+## 
+
 ------------------- IN PROGRESS (LET ME KNOW IF YOU REACH THIS POINT) --------------------------
