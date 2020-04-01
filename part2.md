@@ -274,7 +274,7 @@ export default () => {
   const { data, loading, error } = useQuery(
     CURRENT_USER,
     {
-      networkPolicy: 'network-only'
+      fetchPolicy: 'cache-and-network'
     }
   );
 
@@ -300,7 +300,7 @@ export default () => {
 }
 ```
 
-Notice above that we are defining a `networkPolicy` of `'network-only'` when we use this query. That's because we want the most updated information about our user whenever we access this page. We don't want to rely on what is stored in our `cache`.
+Notice above that we are defining a `fetchPolicy` of `'network-only'` when we use this query. That's because we want the most updated information about our user whenever we access this page. We don't want to rely on what is stored in our `cache`.
 
 Now, try refreshing the page when there is no `token` in your `localStorage` (`localStorage.removeItem('token')`). What happens? You should get an error message saying `Cannot read the property 'username' of null`. Try `console.log`ing what `data.me` is. 
 
@@ -414,7 +414,7 @@ Create just the form with just the `useState` for now, no `useMutation` hook yet
 
 Now, to submit our form, we need to use the hook, `useMutation`. Familiarize yourself with what `useMutation` returns by checking out this reading again, [Apollo Client reading].
 
-**Try coming up with the syntax for `useMutation`. You should be refetching the `IS_LOGGED_IN` query after running the mutation.** After finishing, please compare with the syntax below.
+**Try coming up with the syntax for `useMutation`. You should be refetching the `IS_LOGGED_IN` and `CURRENT_USER` query after running the mutation.** After finishing, please compare with the syntax below.
 
 Your completed form should look something like this:
 
@@ -505,8 +505,6 @@ Try making a `SignUp` page and `SignUpForm` on your own.
 There is no mutation for signing up on our server, so head over to the server files and make a mutation for `signup` there as well.
 
 Test out your `SignUp` page and make sure everything works properly still!
-
-------------------- IN PROGRESS (LET ME KNOW IF YOU REACH THIS POINT) --------------------------
 
 [part1_solutions.zip]: /part1_solutions.zip
 [Apollo Client reading]: https://github.com/ssoonmi/mern-graphql-curriculum/blob/master/apollo_client.md

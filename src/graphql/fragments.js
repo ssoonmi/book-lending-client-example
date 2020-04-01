@@ -17,3 +17,12 @@ export const AUTHOR_DATA = gql`
     name
   }
 `;
+
+export const USER_CREDENTIALS_DATA = gql`
+  fragment UserCredentialsData on UserCredentials {
+    _id
+    username
+    token
+    loggedIn
+  }
+`;
