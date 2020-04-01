@@ -8,7 +8,7 @@ export default () => {
   const { data, loading, error } = useQuery(
     CURRENT_USER,
     {
-      fetchPolicy: 'cache-and-network'
+      fetchPolicy: 'network-only'
     }
   );
 

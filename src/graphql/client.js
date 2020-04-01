@@ -1,11 +1,11 @@
 import { ApolloClient } from "apollo-client";
 import { InMemoryCache } from "apollo-cache-inmemory";
-import { ApolloLink } from 'apollo-link';
 import { HttpLink } from "apollo-link-http";
 import { onError } from "apollo-link-error";
 import { CURRENT_USER } from './queries';
 import gql from 'graphql-tag';
 import { typeDefs, resolvers } from './resolvers';
+import { setContext } from 'apollo-link-context';
 
 const createClient = async () => {
   const cache = new InMemoryCache({ dataIdFromObject: object => object._id });
@@ -24,20 +24,23 @@ const createClient = async () => {
     }
     if (networkError) console.log("\x1b[31m%s\x1b[0m", "[Network error]:", networkError);
   });
-  links.push(errorLink);
 
-  const httpLink = new HttpLink({
-    uri: 'http://localhost:5000/graphql',
-    headers: {
-      authorization: localStorage.getItem('token')
-    }
+  const authLink = setContext((_, { headers }) => {
+    return {
+      headers : {
+        ...headers,
+        authorization: localStorage.getItem('token')
+      }
+    };
   });
 
-  links.push(httpLink);
+  const httpLink = new HttpLink({
+    uri: 'http://localhost:5000/graphql'
+  });
 
   const client = new ApolloClient({
     cache,
-    link: ApolloLink.from(links),
+    link: authLink.concat(httpLink, errorLink),
     typeDefs,
     resolvers
   });

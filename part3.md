@@ -193,6 +193,46 @@ Create a `DeleteBookButton` that will call this mutation.
 
 You also need to make sure the `BookIndex` page and the `AuthorShow` page don't display the book anymore.
 
-## 
+## Fix on Authentication on the Client
+
+To tell our server who the logged in user is in our server, our client needs to send the `token` in `localStorage` through the `authorization` `header` of the request. The way we did it before is not enough. 
+
+Before testing and seeing why this is faulty, make sure you are logged out and you refreshed the page. Then head over to the Login page and log in the `demo` user. Then try going to the profile from the navigation bar. You should see an error message.
+
+This is because the `token` in the `authorization` header is set initially to nothing when we first load our app. Then we login a user and expected the `authorization` header to reflect the new `token`, but it didnt'.
+
+To make sure this doesn't happen and that we always have the correct `token` in our `authorization` header, we need to install another package called `apollo-link-context`. 
+
+In our `src/graphql/client.js`, we are going to `import { setContext } from 'apollo-link-context'`, and create a new link, like so:
+
+```javascript
+// src/graphql/client.js before client definition
+const authLink = setContext((_, { headers }) => {
+  return {
+    headers : {
+      ...headers,
+      authorization: localStorage.getItem('token')
+    }
+  };
+});
+```
+
+This is setting the headers every time a request is made.
+
+Then we are going to define the `client` like so:
+
+```javascript
+// src/graphql/client.js
+const client = new ApolloClient({
+  cache,
+  link: authLink.concat(httpLink, errorLink),
+  typeDefs,
+  resolvers
+});
+```
+
+With this, we don't need the `links` array from before or the `ApolloLink` package anymore.
+
+Try this new link! You should be able to log in and log out without worrying if you have the initial `token` in your headers.
 
 ------------------- IN PROGRESS (LET ME KNOW IF YOU REACH THIS POINT) --------------------------
