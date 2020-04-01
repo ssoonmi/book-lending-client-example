@@ -165,4 +165,32 @@ export default ({ book }) => {
 }
 ```
 
+After we return the book, we need to make sure the current user information on what books they borrowed are kept up to date, so we filter the returned book out from the current user's books.
+
+## Creating a Book
+
+Let's add a `CreateBookForm` to the `AuthorDetails` component. 
+
+The `CreateBookForm` should take the `author`'s `_id` from the `AuthorDetails` component and create a book from that `author`. 
+
+**Try to make the `CreateBookForm` component without using `useMutation` for now.**
+
+Next, let's add a mutation to our server for creating a book, `createBook`. Make sure to return the `book` and the `author` details from this `mutation`.
+
+Create a template literal for `CREATE_BOOK` in your `src/graphql/mutations.js` file in your client. In your `CreateBookForm` call this mutation when submitting a form. When the mutation is completed, you need to either refetch the `GET_BOOKS` query and the `GET_AUTHOR` query, OR update the cache. Discuss/Think about what the best approach is for this and do it.
+
+Test out your component and make sure the created book gets added to the list of books on its author's `AuthorShow` page and the list of books on the `BookIndex` page.
+
+## Deleting a Book
+
+Let's add a delete button for a book on the `BookShow` page.
+
+First, you need to add a mutation to our server for deleting a book, `deleteBook`. 
+
+Then, add a template literal for `DELETE_BOOK` in your `src/graphql/mutations.js` file in your client.
+
+Create a `DeleteBookButton` that will call this mutation.
+
+You also need to make sure the `BookIndex` page and the `AuthorShow` page don't display the book anymore.
+
 ------------------- IN PROGRESS (LET ME KNOW IF YOU REACH THIS POINT) --------------------------
