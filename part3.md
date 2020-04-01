@@ -169,7 +169,7 @@ After we return the book, we need to make sure the current user information on w
 
 ## Creating a Book
 
-Let's add a `CreateBookForm` to the `AuthorDetails` component. 
+Let's add a `CreateBookForm` to the `AuthorDetails` component, and only allow logged in users to see this form.
 
 The `CreateBookForm` should take the `author`'s `_id` from the `AuthorDetails` component and create a book from that `author`. 
 
@@ -183,7 +183,7 @@ Test out your component and make sure the created book gets added to the list of
 
 ## Deleting a Book
 
-Let's add a delete button for a book on the `BookShow` page.
+Let's add a delete button for a book on the `BookShow` page which only allows logged in users to delete a book.
 
 First, you need to add a mutation to our server for deleting a book, `deleteBook`. 
 
