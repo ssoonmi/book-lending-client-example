@@ -87,7 +87,7 @@ export default ({ book }) => {
         // can either write to the cache directly or refetchQueries
         const data = cache.readQuery({ query: CURRENT_USER })
         const me = Object.assign({}, data.me);
-        me.books = me.books.concat(me.books, [books[0]]);
+        me.books = me.books.concat(books);
         cache.writeQuery({ query: CURRENT_USER, data: { me } });
       },
       // refetchQueries: [{ query: CURRENT_USER }]
@@ -235,4 +235,16 @@ With this, we don't need the `links` array from before or the `ApolloLink` packa
 
 Try this new link! You should be able to log in and log out without worrying if you have the initial `token` in your headers.
 
-------------------- IN PROGRESS (LET ME KNOW IF YOU REACH THIS POINT) --------------------------
+## Admin-only Components
+
+Let's create a component, `AdminComponent` that will render a component that can only be accessed by users who are administrators.
+
+First, we need to include a boolean property, `isAdmin`, on a Mongoose `User` model that will be false by default, but when set to true will allow the user to become an admin. 
+
+Include this property as a field in your GraphQL type definition for a `User` and include the field as a return in your `CURRENT_USER` query on your client. From there, you can make the `AdminComponent`, similar to how you created the `ProtectedComponent`.
+
+Make the `CreateBookForm` and `DeleteBookButton` an `AdminComponent`.
+
+## Bonus
+
+Try to come up with more components and features to add, or do some CSS styling.

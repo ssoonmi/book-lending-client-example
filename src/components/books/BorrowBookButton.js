@@ -13,7 +13,7 @@ export default ({ book }) => {
         // can either write to the cache directly or refetchQueries
         const data = cache.readQuery({ query: CURRENT_USER })
         const me = Object.assign({}, data.me);
-        me.books = me.books.concat(me.books, [books[0]]);
+        me.books = me.books.concat(books);
         cache.writeQuery({ query: CURRENT_USER, data: { me } });
       },
       // refetchQueries: [{ query: CURRENT_USER }]
