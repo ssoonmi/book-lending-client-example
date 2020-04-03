@@ -9,9 +9,7 @@ import { setContext } from 'apollo-link-context';
 
 const createClient = async () => {
   const cache = new InMemoryCache({ dataIdFromObject: object => object._id });
-
-  const links = [];
-
+  
   const errorLink = onError(({ networkError, graphQLErrors }) => {
     if (graphQLErrors) {
       graphQLErrors.forEach(({ message, locations, path, extensions }) => {
