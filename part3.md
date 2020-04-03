@@ -235,6 +235,8 @@ With this, we don't need the `links` array from before or the `ApolloLink` packa
 
 Try this new link! You should be able to log in and log out without worrying if you have the initial `token` in your headers.
 
+If you want to know more about `auth-link-context`, check out the [auth-link-context Docs].
+
 ## Admin-only Components
 
 Let's create a component, `AdminComponent` that will render a component that can only be accessed by users who are administrators.
@@ -248,3 +250,5 @@ Make the `CreateBookForm` and `DeleteBookButton` an `AdminComponent`.
 ## Bonus
 
 Try to come up with more components and features to add, or do some CSS styling.
+
+[auth-link-context Docs]: https://www.apollographql.com/docs/link/links/context/

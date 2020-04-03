@@ -136,7 +136,7 @@ if (localStorage.getItem('token')) {
 }
 ```
 
-If there is no `data` or `data.me` is null, then reset the `cache`. 
+If there is no `data` or `data.me` is null, then reset the `cache`. We can also do `client.clearStore()`. For more information on which is better, check out the [Apollo Client Docs on logging out].
 
 We should also remove the invalid `token` from our `localStorage` when the client is reset. We can define what our cache should do when our `cache` is reset using, `client.onResetStore`. This takes in a callback function that will be called whenever our `cache` resets.
 
@@ -508,3 +508,4 @@ Test out your `SignUp` page and make sure everything works properly still!
 
 [part1_solutions.zip]: /part1_solutions.zip
 [Apollo Client reading]: https://github.com/ssoonmi/mern-graphql-curriculum/blob/master/apollo_client.md
+[Apollo Client docs on logging out]: https://www.apollographql.com/docs/react/networking/authentication/#reset-store-on-logout
