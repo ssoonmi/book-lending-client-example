@@ -225,17 +225,19 @@ Then we are going to define the `client` like so:
 // src/graphql/client.js
 const client = new ApolloClient({
   cache,
-  link: authLink.concat(httpLink, errorLink),
+  link: ApolloLink.from([authLink.concat(errorLink), httpLink]),
   typeDefs,
   resolvers
 });
 ```
 
-With this, we don't need the `links` array from before or the `ApolloLink` package anymore.
+With this, we don't need the `links` array created from before.
 
 Try this new link! You should be able to log in and log out without worrying if you have the initial `token` in your headers.
 
 If you want to know more about `auth-link-context`, check out the [auth-link-context Docs].
+
+If you want to know more about middlewares, check out the [Network Middleware Docs].
 
 ## Admin-only Components
 
@@ -252,3 +254,4 @@ Make the `CreateBookForm` and `DeleteBookButton` an `AdminComponent`.
 Try to come up with more components and features to add, or do some CSS styling.
 
 [auth-link-context Docs]: https://www.apollographql.com/docs/link/links/context/
+[Network Middleware Docs]: https://www.apollographql.com/docs/react/networking/network-layer/#middleware
